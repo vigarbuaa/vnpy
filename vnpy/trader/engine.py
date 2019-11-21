@@ -4,6 +4,8 @@
 import logging
 import smtplib
 import os
+import time
+import traceback
 from abc import ABC
 from datetime import datetime
 from email.message import EmailMessage
@@ -527,6 +529,7 @@ class EmailEngine(BaseEngine):
     def run(self):
         """"""
         while self.active:
+            msg = EmailMessage()
             try:
                 msg = self.queue.get(block=True, timeout=1)
 
@@ -537,7 +540,11 @@ class EmailEngine(BaseEngine):
                         SETTINGS["email.username"], SETTINGS["email.password"]
                     )
                     smtp.send_message(msg)
-            except Empty:
+            except Exception as e:
+                exception = traceback.format_exc()
+                self.write_log("mail error msg:{}".format(exception))
+                self.queue.put(msg)
+                time.sleep(10)
                 pass
 
     def start(self):
