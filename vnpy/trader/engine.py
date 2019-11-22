@@ -542,7 +542,7 @@ class EmailEngine(BaseEngine):
                     smtp.send_message(msg)
             except Exception as e:
                 exception = traceback.format_exc()
-                self.write_log("mail error msg:{}".format(exception))
+                self.main_engine.write_log("mail error msg:{}".format(exception))
                 self.queue.put(msg)
                 time.sleep(10)
                 pass
