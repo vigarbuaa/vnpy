@@ -532,6 +532,8 @@ class EmailEngine(BaseEngine):
             msg = EmailMessage()
             try:
                 msg = self.queue.get(block=True, timeout=1)
+                if (msg["To"]==""):
+                    continue
 
                 with smtplib.SMTP_SSL(
                     SETTINGS["email.server"], SETTINGS["email.port"]
