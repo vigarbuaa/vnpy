@@ -333,7 +333,7 @@ class BitmexRestApi(RestClient):
                 "count": count,
                 "startTime": start_time
             }
-
+            time.sleep(0.5)
             # Add end time if specified
             if req.end:
                 params["endTime"] = req.end.isoformat()
