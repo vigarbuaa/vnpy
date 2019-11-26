@@ -505,7 +505,7 @@ class EmailEngine(BaseEngine):
         self.thread = Thread(target=self.run)
         self.queue = Queue()
         self.active = False
-
+        self.last_msg = None
         self.main_engine.send_email = self.send_email
 
     def send_email(self, subject: str, content: str, receiver: str = ""):
@@ -529,12 +529,9 @@ class EmailEngine(BaseEngine):
     def run(self):
         """"""
         while self.active:
-            msg = EmailMessage()
             try:
                 msg = self.queue.get(block=True, timeout=1)
-                if (msg["To"]==""):
                     continue
-
                 with smtplib.SMTP_SSL(
                     SETTINGS["email.server"], SETTINGS["email.port"]
                 ) as smtp:
@@ -542,12 +539,14 @@ class EmailEngine(BaseEngine):
                         SETTINGS["email.username"], SETTINGS["email.password"]
                     )
                     smtp.send_message(msg)
+                    self.last_msg=None
+            except Empty:
+                pass
             except Exception as e:
                 exception = traceback.format_exc()
                 self.main_engine.write_log("mail error msg:{}".format(exception))
-                self.queue.put(msg)
+                self.queue.put(self.last_msg)
                 time.sleep(10)
-                pass
 
     def start(self):
         """"""
