@@ -10,63 +10,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore  import *
 import requests
 
-# add Dialog Example to check Combox/SpinBox/connect signal
-class InterestCalc(QDialog):
-
-    def __init__(self,parent=None):
-        super(InterestCalc,self).__init__(parent)
-        self.init_ui()
-
-    def init_ui(self):
-        print("begin to init_ui")
-        principalLabel=QLabel("Pricipal:")
-        self.principalSpinBox=QDoubleSpinBox()
-        self.principalSpinBox.setRange(1,100000)
-        self.principalSpinBox.setValue(100)
-        # self.principalSpinBox.setPrefix("元")
-        # self.principalSpinBox.setSuffix(" a")
-
-        rateLabel=QLabel("Rate:")
-        self.rateSpinBox=QDoubleSpinBox()
-        self.rateSpinBox.setRange(1,100)
-        self.rateSpinBox.setValue(5)
-        self.rateSpinBox.setPrefix("")
-        self.rateSpinBox.setSuffix(" %")
-
-        yearLabel=QLabel("Year:")
-        self.yearCombBox=QComboBox()
-        self.yearCombBox.addItem("1 year")
-        self.yearCombBox.addItems([
-            "{0} years".format(x)  for x in range(2,30)
-        ])
-
-        amountLabel=QLabel("Amount")
-        self.amountLabel=QLabel()
-
-        
-        grid=QtWidgets.QGridLayout()
-        grid.addWidget(principalLabel,0,0)
-        grid.addWidget(self.principalSpinBox,0,1)
-        grid.addWidget(rateLabel,1,0)
-        grid.addWidget(self.rateSpinBox,1,1)
-        grid.addWidget(yearLabel,2,0)
-        grid.addWidget(self.yearCombBox,2,1)
-        grid.addWidget(amountLabel,3,0)
-        grid.addWidget(self.amountLabel,3,1)
-
-        self.setLayout(grid)
-        self.setWindowTitle("利率计算样例")
-        self.principalSpinBox.valueChanged.connect(self.updateUI)
-        self.rateSpinBox.valueChanged.connect(self.updateUI)
-        self.yearCombBox.currentIndexChanged.connect(self.updateUI)
-
-    def updateUI(self):
-        principal=self.principalSpinBox.value()
-        rate=self.rateSpinBox.value()
-        year=self.yearCombBox.currentIndex()+1
-        value=principal*((1+rate/100)**year)
-        self.amountLabel.setText("RMB {0:.2f}".format(value))
-    
 class MainWindow(QMainWindow):
 
     def __init__(self,parent=None):
@@ -142,10 +85,9 @@ class MainWindow(QMainWindow):
 if __name__=="__main__":
 # create the application and the main window
     app = QtWidgets.QApplication(sys.argv)
-    #window = MainWindow()
-    window = InterestCalc()
+    window = MainWindow()
 
-    #app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
+    app.setStyleSheet(qdarkstyle.load_stylesheet_pyqt5())
 
     window.show()
     app.exec_()
