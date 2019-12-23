@@ -17,14 +17,15 @@ class TestServer(RpcServer):
         super(TestServer, self).__init__()
 
         self.register(self.add)
+        self.register(self.sub)
 
     def add(self, a, b):
-        """
-        Test function
-        """
         print(f"receiving:{a} {b}")
         return a + b
 
+    def sub(self, a, b):
+        print(f"receiving:{a} {b} to sub")
+        return a - b
 
 if __name__ == "__main__":
     rep_address = "tcp://*:2014"
@@ -36,5 +37,5 @@ if __name__ == "__main__":
     while 1:
         content = f"current server time is {time()}"
         print(content)
-        ts.publish("test", content)
+        ts.publish("ping", content)
         sleep(2)
