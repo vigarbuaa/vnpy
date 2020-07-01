@@ -31,6 +31,10 @@ def download_data(code,begin_date,end_date):
     data_df = data_df.append(k_rs.get_data())
     return data_df
 
+def get_all_code_local():
+    df=pd.read_excel("all_stock_detail.xlsx")
+    return df['stock_num'].tolist()
+
 # def get all stock list
 def get_all_code():
     rs = bs.query_all_stock(day="2018-06-28")
@@ -51,7 +55,7 @@ def get_all_code():
 # plot
 def save_plt(df,date,symbol):
     summary=date+"_"+symbol
-    fig, axes = plt.subplots(4, 1,figsize=(15,10))
+    fig, axes = plt.subplots(7, 1,figsize=(15,10))
     plt.title(summary, fontproperties='SimHei', fontsize=15)
     ax0=axes[0]
     ax0.set_title(symbol,fontproperties='SimHei', fontsize=15)
@@ -59,32 +63,51 @@ def save_plt(df,date,symbol):
     df['ad'].astype('float64').plot(ax=axes[1])
     df['adosc'].astype('float64').plot(ax=axes[2])
     df['adxr'].astype('float64').plot(ax=axes[3])
+    df['cci'].astype('float64').plot(ax=axes[4])
+    df['mfi'].astype('float64').plot(ax=axes[5])
+    df['rsi'].astype('float64').plot(ax=axes[6])
     pic_name=symbol+".png"
-    plt.subplots_adjust(hspace=0.5)
+    plt.subplots_adjust(hspace=1.5)
     plt.savefig(date+"/"+pic_name)
 
 
 bs.login()
-code_list= get_all_code()
+# code_list= get_all_code()
+code_list= get_all_code_local()
+print(code_list)
 today=todayDateStr()
 if not os.path.exists(today):
     os.makedirs(today)
 
 index=0
 for elem in code_list:
-    df=download_data(elem,"2020-01-01",today)
-    ad= talib.AD(df.high, df.low, df.close,df.volume)
-    df['ad']=ad
-    adosc= talib.ADOSC(df.high, df.low, df.close, df.volume, fastperiod=3, slowperiod=10)
-    df['adosc']=adosc
-    adxr = talib.ADXR(df.high, df.low, df.close, timeperiod=14)
-    df['adxr']=adxr
-    save_plt(df,today,elem)
-    df.to_csv(today+"/"+elem+".csv")
-    index=index+1
-    if(index>5):
-        break
+    try:
+        df=download_data(elem,"2020-01-01",today)
+        adosc= talib.ADOSC(df.high, df.low, df.close, df.volume, fastperiod=3, slowperiod=10)
+        df['adosc']=adosc
+        adxr = talib.ADXR(df.high, df.low, df.close, timeperiod=14)
+        df['adxr']=adxr
+        mfi = talib.MFI(df.high, df.low, df.close, df.volume, timeperiod=14)
+        df['mfi']=mfi
+        cci= talib.CCI(df.high, df.low, df.close, 14)
+        df['cci']=cci
+        rsi = talib.RSI(df.close, 10)
+        df['rsi']=rsi
+        ad= talib.AD(df.high, df.low, df.close,df.volume)
+        df['ad']=ad
+        # print(rsi.values[-1])
+        # print(type(rsi))
+        # if(rsi.values[-1]>80 or rsi.values[-1]<10):
+        if(rsi.values[-1]<20):
+            df.to_csv(today+"/"+elem+".csv")
+    except:
+        traceback.print_exc
+    # save_plt(df,today,elem)
+    # index=index+1
+    # if(index>20):
+        # break
 bs.logout()
+
 #symbol="sh.600859"
 #date_str = todayDateStr()
 ## df2=download_data("sz.002142",date_str)
