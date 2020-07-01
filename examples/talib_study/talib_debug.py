@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 # integer = talib.CDLHAMMER(df.open, df.high, df.low, df.close)
 # print(integer)
 
-bs.login()
+
 def todayDateStr():
     return  time.strftime("%Y-%m-%d",time.localtime())
 
@@ -31,28 +31,45 @@ def download_data(code,date):
     data_df = data_df.append(k_rs.get_data())
     return data_df
 
-symbol="sh.600859"
-date_str = todayDateStr()
-# df2=download_data("sz.002142",date_str)
-df2=download_data(symbol,date_str)
-integer = talib.AD(df2.high, df2.low, df2.close,df2.volume)
-df2['AD']=integer
-real = talib.ADOSC(df2.high, df2.low, df2.close, df2.volume, fastperiod=3, slowperiod=10)
-df2['ADOSC']=real
-# integer4 = talib.CDLUNIQUE3RIVER(df2.open, df2.high, df2.low, df2.close)
-# df2['CDLUNIQUE3RIVER']=integer4
-print(type(df2))
-print(df2.dtypes)
-# df2.to_csv(symbol+".csv")
-bs.logout()
+# def get all stock list
+def get_all_code():
+    rs = bs.query_all_stock(day="2018-06-28")
+    print('query_all_stock respond error_code:' + rs.error_code)
+    print('query_all_stock respond error_msg:' + rs.error_msg)
+# 打印结果集
+    code_list = []
+    while (rs.error_code == '0') & rs.next():
+     # 获取一条记录，将记录合并在一起
+        code_list.append(rs.get_row_data()[0])
+    print(code_list)
+    return code_list
 
-fig, axes = plt.subplots(3, 1,figsize=(15,10))
+# download data and calc AD/ADOSC 
+
+# filter AD >10000 save it to file
+
+bs.login()
+get_all_code()
+bs.logout()
+#symbol="sh.600859"
+#date_str = todayDateStr()
+## df2=download_data("sz.002142",date_str)
+#df2=download_data(symbol,date_str)
+#integer = talib.AD(df2.high, df2.low, df2.close,df2.volume)
+#df2['AD']=integer
+#real = talib.ADOSC(df2.high, df2.low, df2.close, df2.volume, fastperiod=3, slowperiod=10)
+#df2['ADOSC']=real
+#print(type(df2))
+#print(df2.dtypes)
+# df2.to_csv(symbol+".csv")
+
+#fig, axes = plt.subplots(3, 1,figsize=(15,10))
 #plt.title(summary, fontproperties='SimHei', fontsize=15)
-ax0=axes[0]
-ax0.set_title(symbol,fontproperties='SimHei', fontsize=15)
-df2['close'].astype('float64').plot(ax=axes[0])
-df2['AD'].astype('float64').plot(ax=axes[1])
-df2['ADOSC'].astype('float64').plot(ax=axes[2])
-pic_name=symbol+".png"
-plt.subplots_adjust(hspace=0.5)
-plt.savefig(pic_name)
+#ax0=axes[0]
+#ax0.set_title(symbol,fontproperties='SimHei', fontsize=15)
+#df2['close'].astype('float64').plot(ax=axes[0])
+#df2['AD'].astype('float64').plot(ax=axes[1])
+#df2['ADOSC'].astype('float64').plot(ax=axes[2])
+#pic_name=symbol+".png"
+#plt.subplots_adjust(hspace=0.5)
+#plt.savefig(pic_name)
