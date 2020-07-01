@@ -19,15 +19,15 @@ import matplotlib.pyplot as plt
 def todayDateStr():
     return  time.strftime("%Y-%m-%d",time.localtime())
 
-
-def download_data(code,date):
+def download_data(code,begin_date,end_date):
     # 获取指定日期的指数、股票数据
     # stock_rs = bs.query_all_stock(date)
     # stock_df = stock_rs.get_data()
     data_df = pd.DataFrame()
     # for code in stock_df["code"]:
     print("Downloading :" + code)
-    k_rs = bs.query_history_k_data_plus(code, "date,code,open,high,low,close,volume,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST", "2020-01-01", date)
+    # k_rs = bs.query_history_k_data_plus(code, "date,code,open,high,low,close,volume,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST", "2020-01-01", date)
+    k_rs = bs.query_history_k_data_plus(code, "date,code,open,high,low,close,volume,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST", begin_date, end_date)
     data_df = data_df.append(k_rs.get_data())
     return data_df
 
@@ -41,15 +41,49 @@ def get_all_code():
     while (rs.error_code == '0') & rs.next():
      # 获取一条记录，将记录合并在一起
         code_list.append(rs.get_row_data()[0])
-    print(code_list)
+    # print(code_list)
     return code_list
 
 # download data and calc AD/ADOSC 
 
 # filter AD >10000 save it to file
 
+# plot
+def save_plt(df,date,symbol):
+    summary=date+"_"+symbol
+    fig, axes = plt.subplots(4, 1,figsize=(15,10))
+    plt.title(summary, fontproperties='SimHei', fontsize=15)
+    ax0=axes[0]
+    ax0.set_title(symbol,fontproperties='SimHei', fontsize=15)
+    df['close'].astype('float64').plot(ax=axes[0])
+    df['ad'].astype('float64').plot(ax=axes[1])
+    df['adosc'].astype('float64').plot(ax=axes[2])
+    df['adxr'].astype('float64').plot(ax=axes[3])
+    pic_name=symbol+".png"
+    plt.subplots_adjust(hspace=0.5)
+    plt.savefig(date+"/"+pic_name)
+
+
 bs.login()
-get_all_code()
+code_list= get_all_code()
+today=todayDateStr()
+if not os.path.exists(today):
+    os.makedirs(today)
+
+index=0
+for elem in code_list:
+    df=download_data(elem,"2020-01-01",today)
+    ad= talib.AD(df.high, df.low, df.close,df.volume)
+    df['ad']=ad
+    adosc= talib.ADOSC(df.high, df.low, df.close, df.volume, fastperiod=3, slowperiod=10)
+    df['adosc']=adosc
+    adxr = talib.ADXR(df.high, df.low, df.close, timeperiod=14)
+    df['adxr']=adxr
+    save_plt(df,today,elem)
+    df.to_csv(today+"/"+elem+".csv")
+    index=index+1
+    if(index>5):
+        break
 bs.logout()
 #symbol="sh.600859"
 #date_str = todayDateStr()
