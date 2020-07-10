@@ -31,3 +31,7 @@ dist
 _build
 _static
 _templates
+
+*.xlsx
+*.png
+*.csv

@@ -5,7 +5,7 @@ import baostock as bs
 import os, time, json, sys, traceback, logging, getopt
 import matplotlib.pyplot as plt
 
-# 模拟数据,0629改为实际数据
+#  此程序用于批量取数据
 # df = pd.DataFrame(np.random.rand(18,4))
 # df.columns=['open','high','low','close']
 # print(df)
@@ -98,8 +98,9 @@ for elem in code_list:
         # print(rsi.values[-1])
         # print(type(rsi))
         # if(rsi.values[-1]>80 or rsi.values[-1]<10):
-        if(rsi.values[-1]<20):
+        if(rsi.values[-1]>80):
             df.to_csv(today+"/"+elem+".csv")
+            save_plt(df,today,elem)
     except:
         traceback.print_exc
     # save_plt(df,today,elem)

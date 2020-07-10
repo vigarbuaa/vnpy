@@ -22,8 +22,7 @@ def get_all_code_local():
 bs.login()
 code_list= get_all_code_local()
 print(code_list)
-# today=todayDateStr()
-today="2020-07-07"
+today=todayDateStr()
 if not os.path.exists(today):
     os.makedirs(today)
 
@@ -41,5 +40,4 @@ for elem in code_list:
     except:
         traceback.print_exc
 bs.logout()
-# df_all.to_excel(today+"/"+"all_code"+".xlsx")
-df_all.to_excel("2020-07-08"+"/"+"all_code"+".xlsx")
+df_all.to_excel(today+"/"+"all_code"+".xlsx")
