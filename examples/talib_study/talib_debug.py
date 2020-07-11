@@ -70,7 +70,6 @@ def save_plt(df,date,symbol):
     plt.subplots_adjust(hspace=1.5)
     plt.savefig(date+"/"+pic_name)
 
-
 bs.login()
 # code_list= get_all_code()
 code_list= get_all_code_local()
