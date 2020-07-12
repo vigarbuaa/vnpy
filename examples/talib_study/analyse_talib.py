@@ -5,6 +5,8 @@ import baostock as bs
 import os, time, json, sys, traceback, logging, getopt
 import matplotlib.pyplot as plt
 from urllib import request
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 def todayDateStr():
     return  time.strftime("%Y-%m-%d",time.localtime())
@@ -65,17 +67,39 @@ def get_df_from_local(code):
     json_raw = target_html
     json_body = json.loads(json.loads(json_raw))
     df = pd.DataFrame(json_body)
-    return df
+    ret = df
+    ret['date_str']=pd.to_datetime(ret['date'])
+    ret.set_index("date_str",inplace=True)
+    ret = df.drop(columns=['ID',"date"])
+    print(ret.head(4))
+    return ret 
 
-bs.login()
-code_list= get_all_code_local()
-print(code_list)
-today=todayDateStr()
-if not os.path.exists(today):
-    os.makedirs(today)
-df = get_df_from_local("sh.600000")
+def draw(df):
+    # 创建一个4行、1列的带子图绘图区域，并分别给子图加上标题
+    fig = make_subplots(rows=3, cols=1, subplot_titles=["Close", "volume"])
+    fig.add_trace(go.Line(x=df.index, y=df["close"], name="Close"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df["volume"], fillcolor="red", fill='tozeroy', line={"width": 0.5, "color": "red"}, name="Volume"), row=2, col=1)
+    fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=3, col=1)
+    # 把图表放大些，默认小了点
+    fig.update_layout(height=700, width=700)
+
+    # 将绘制完的图表，正式显示出来
+    fig.show()
+
+# bs.login()
+# code_list= get_all_code_local()
+# print(code_list)
+# today=todayDateStr()
+# if not os.path.exists(today):
+    # os.makedirs(today)
+df = get_df_from_local("sh.600030")
+print(df.index)
+print(df.columns)
+draw(df)
 print(df.head(5))
 print(df.tail(5))
+
+
 #index=0
 #for elem in code_list:
 #    try:
