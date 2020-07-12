@@ -76,15 +76,40 @@ def get_df_from_local(code):
 
 def draw(df):
     # 创建一个4行、1列的带子图绘图区域，并分别给子图加上标题
-    fig = make_subplots(rows=3, cols=1, subplot_titles=["Close", "volume"])
+    # fig = make_subplots(rows=3, cols=2, subplot_titles=["Close", "volume"])
+    fig = make_subplots(rows=4, cols=2)
     fig.add_trace(go.Line(x=df.index, y=df["close"], name="Close"), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df["volume"], fillcolor="red", fill='tozeroy', line={"width": 0.5, "color": "red"}, name="Volume"), row=2, col=1)
-    fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=3, col=1)
+    fig.add_trace(go.Scatter(x=df.index, y=df["volume"], fillcolor="red", fill='tozeroy', line={"width": 0.5, "color": "red"}, name="Volume"), row=1, col=2)
+    fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=2, col=1)
+    fig.add_trace(go.Bar(x=df.index, y=df["cci"],  name="CCI"), row=2, col=2)
+    fig.add_trace(go.Bar(x=df.index, y=df["rsi"],  name="RSI"), row=3, col=1)
+    fig.add_trace(go.Bar(x=df.index, y=df["adx"],  name="ADX"), row=3, col=2)
+    fig.add_trace(go.Line(x=df.index, y=df["cdl3doutside"],  name="CDL3OUTSIDE"), row=4, col=1)
+    fig.add_trace(go.Line(x=df.index, y=df["cdl3whitesoldiers"],  name="cdl3whitesoldiers"), row=4, col=2)
+    # fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=2, col=1)
     # 把图表放大些，默认小了点
-    fig.update_layout(height=700, width=700)
+    fig.update_layout(height=1000, width=1000)
 
     # 将绘制完的图表，正式显示出来
     fig.show()
+
+def add_talib_zhibiao(df):
+    # add cci and +-100 line
+    cci= talib.CCI(df.high, df.low, df.close, 14)
+    df['cci']=cci
+    #名称：Three Outside Up/Down 三外部上涨和下跌   
+    cdl3doutside = talib.CDL3OUTSIDE(df.open, df.high, df.low, df.close)
+    df['cdl3doutside']=cdl3doutside
+    # 三个白兵，指上涨
+    cdl3whitesoldiers = talib.CDL3WHITESOLDIERS(df.open, df.high, df.low, df.close)
+    df['cdl3whitesoldiers']=cdl3whitesoldiers
+    
+    rsi = talib.RSI(df.close, timeperiod=14)
+    df['rsi']=rsi
+    adx = talib.ADX(df.high, df.low, df.close, timeperiod=14)
+    df['adx']=adx
+
+    return df
 
 # bs.login()
 # code_list= get_all_code_local()
@@ -93,6 +118,7 @@ def draw(df):
 # if not os.path.exists(today):
     # os.makedirs(today)
 df = get_df_from_local("sh.600030")
+df = add_talib_zhibiao(df)
 print(df.index)
 print(df.columns)
 draw(df)
