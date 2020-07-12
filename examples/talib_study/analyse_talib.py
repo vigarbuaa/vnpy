@@ -77,15 +77,19 @@ def get_df_from_local(code):
 def draw(df):
     # 创建一个4行、1列的带子图绘图区域，并分别给子图加上标题
     # fig = make_subplots(rows=3, cols=2, subplot_titles=["Close", "volume"])
-    fig = make_subplots(rows=4, cols=2)
+    fig = make_subplots(rows=5, cols=2)
     fig.add_trace(go.Line(x=df.index, y=df["close"], name="Close"), row=1, col=1)
     fig.add_trace(go.Scatter(x=df.index, y=df["volume"], fillcolor="red", fill='tozeroy', line={"width": 0.5, "color": "red"}, name="Volume"), row=1, col=2)
     fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=2, col=1)
     fig.add_trace(go.Bar(x=df.index, y=df["cci"],  name="CCI"), row=2, col=2)
     fig.add_trace(go.Bar(x=df.index, y=df["rsi"],  name="RSI"), row=3, col=1)
     fig.add_trace(go.Bar(x=df.index, y=df["adx"],  name="ADX"), row=3, col=2)
-    fig.add_trace(go.Line(x=df.index, y=df["cdl3doutside"],  name="CDL3OUTSIDE"), row=4, col=1)
-    fig.add_trace(go.Line(x=df.index, y=df["cdl3whitesoldiers"],  name="cdl3whitesoldiers"), row=4, col=2)
+    fig.add_trace(go.Bar(x=df.index, y=df["mfi"],  name="MFI"), row=4, col=1)
+    fig.add_trace(go.Line(x=df.index, y=df["dif"],  name="MACD_diff"), row=4, col=2)
+    fig.add_trace(go.Line(x=df.index, y=df["dem"],  name="MACD_dem"), row=4, col=2)
+    fig.add_trace(go.Bar(x=df.index, y=df["histogram"],  name="MACD_histogram"), row=4, col=2)
+    fig.add_trace(go.Line(x=df.index, y=df["cdl3doutside"],  name="CDL3OUTSIDE"), row=5, col=1)
+    fig.add_trace(go.Line(x=df.index, y=df["cdl3whitesoldiers"],  name="cdl3whitesoldiers"), row=5, col=2)
     # fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=2, col=1)
     # 把图表放大些，默认小了点
     fig.update_layout(height=1000, width=1000)
@@ -93,6 +97,8 @@ def draw(df):
     # 将绘制完的图表，正式显示出来
     fig.show()
 
+# 类似这种玩法
+# http://www.iwencai.com/stockpick/search?ts=1&f=1&qs=stockhome_topbar_click&w=mfi
 def add_talib_zhibiao(df):
     # add cci and +-100 line
     cci= talib.CCI(df.high, df.low, df.close, 14)
@@ -108,7 +114,12 @@ def add_talib_zhibiao(df):
     df['rsi']=rsi
     adx = talib.ADX(df.high, df.low, df.close, timeperiod=14)
     df['adx']=adx
-
+    mfi = talib.MFI(df.high, df.low, df.close, df.volume, timeperiod=14)
+    df['mfi']=mfi
+    dif, dem, histogram = talib.MACD(df.close, fastperiod=12, slowperiod=26, signalperiod=9)
+    df['dif']=dif
+    df['dem']=dem
+    df['histogram']=histogram
     return df
 
 # bs.login()
@@ -117,7 +128,7 @@ def add_talib_zhibiao(df):
 # today=todayDateStr()
 # if not os.path.exists(today):
     # os.makedirs(today)
-df = get_df_from_local("sh.600030")
+df = get_df_from_local("sh.600859")
 df = add_talib_zhibiao(df)
 print(df.index)
 print(df.columns)
