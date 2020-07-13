@@ -71,7 +71,6 @@ def get_df_from_local(code):
     ret['date_str']=pd.to_datetime(ret['date'])
     ret.set_index("date_str",inplace=True)
     ret = df.drop(columns=['ID',"date"])
-    print(ret.head(4))
     return ret 
 
 def draw(df):
@@ -93,7 +92,6 @@ def draw(df):
     # fig.add_trace(go.Bar(x=df.index, y=df["amount"],  name="Amount"), row=2, col=1)
     # 把图表放大些，默认小了点
     fig.update_layout(height=1000, width=1000)
-
     # 将绘制完的图表，正式显示出来
     fig.show()
 
@@ -122,19 +120,38 @@ def add_talib_zhibiao(df):
     df['histogram']=histogram
     return df
 
+def macd_filter(df):
+    # 金叉
+    if(df["dif"][-1] > df["dem"][-1] and df["dif"][-2] <= df["dem"][-2] and df["histogram"][-1]>0 ):
+        return True
+    else:
+        return False 
+
+    # print(df["dif"][-1])
+    # print(df["dem"][-1])
+    # print(df["histogram"][-1])
+
 # bs.login()
-# code_list= get_all_code_local()
+code_list= get_all_code_local()
 # print(code_list)
 # today=todayDateStr()
 # if not os.path.exists(today):
     # os.makedirs(today)
-df = get_df_from_local("sh.600859")
-df = add_talib_zhibiao(df)
-print(df.index)
-print(df.columns)
-draw(df)
-print(df.head(5))
-print(df.tail(5))
+for elem in code_list:
+    try:
+        df = get_df_from_local(elem)
+        df = add_talib_zhibiao(df)
+        print("begin to analyse-----------"+elem)
+        if(macd_filter(df)):
+            print("Good")
+            print(df.tail(4))
+        else:
+            print("Pass")
+    except:
+        traceback.print_exc
+# print(df.columns)
+# print(df.head(5))
+# print(df.tail(5))
 
 
 #index=0
