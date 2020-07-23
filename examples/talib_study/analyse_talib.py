@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from urllib import request
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import plotly.io as pio
+# import chart_studio.plotly as py
 
 def todayDateStr():
     return  time.strftime("%Y-%m-%d",time.localtime())
@@ -94,11 +94,14 @@ def draw(df,symbol):
     # 把图表放大些，默认小了点
     fig.update_layout(height=1000, width=1000)
     # 将绘制完的图表，正式显示出来
-    # fig.show()
-    pic_name=symbol+".png"
-    plt.subplots_adjust(hspace=1.5)
     today=todayDateStr()
-    pio.write_image(fig,today+"/"+pic_name)
+    pic_name=today+"/"+symbol+".png"
+    print(pic_name)
+    fig.write_image(pic_name)
+    # fig.show()
+    # plotly.offline.init_notebook_mode()
+    # plotly.offline.plot(fig,filename=pic_name)
+    # py.image.save_as(fig,filename=(today+"/"+pic_name))
 
 # 类似这种玩法
 # http://www.iwencai.com/stockpick/search?ts=1&f=1&qs=stockhome_topbar_click&w=mfi
@@ -142,13 +145,19 @@ code_list= get_all_code_local()
 today=todayDateStr()
 if not os.path.exists(today):
     os.makedirs(today)
+index=0
 for elem in code_list:
+    index=index+1
+    if index>3:
+        break
     try:
         df = get_df_from_local(elem)
         df = add_talib_zhibiao(df)
         print("begin to analyse-----------"+elem)
+        draw(df,elem)
         if(macd_filter(df)):
             print("Good")
+            # draw(df,elem)
             print(df.tail(4))
         else:
             print("Pass")
