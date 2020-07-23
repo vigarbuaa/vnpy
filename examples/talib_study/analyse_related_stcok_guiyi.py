@@ -18,6 +18,10 @@ def get_all_code_local():
     df=pd.read_excel("all_stock_detail.xlsx")
     return df['stock_num'].tolist()
 
+def get_industry_local(industry):
+    df=pd.read_excel("all_stock_detail.xlsx")
+    return df[df["industry"]==industry]["stock_num"].tolist()
+
 def get_df_from_local(code):
     symbol=code.replace(".","-")
     # target_url="http://localhost:8088/api/stockHis/"+symbol
@@ -55,8 +59,9 @@ def merge_df(df1,df2):
 
 # df_zero= copy.copy(df_sz)
 # df_zero['close']=0
-symbol_list = ["sh.688086","sz.300821","sz.000001"]
 
+# symbol_list = ["sh.688086","sz.300821","sz.000001"]
+symbol_list = get_industry_local("银行")
 length= len(symbol_list)
 # fig,axes = plt.subplots(length,1,figsize=(15,length*8))
 
