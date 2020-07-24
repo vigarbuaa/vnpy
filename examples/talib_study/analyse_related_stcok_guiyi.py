@@ -36,8 +36,10 @@ def get_df_from_local(code):
     json_raw = target_html
     json_body = json.loads(json.loads(json_raw))
     df = pd.DataFrame(json_body)
+    # ret = df.sort_values('date')
     ret = df
     ret['date_str']=pd.to_datetime(ret['date'])
+    # ret=ret.sort_values('date_str')
     ret.set_index("date_str",inplace=True)
     ret = df.drop(columns=['ID',"date"])
     return ret 
@@ -62,7 +64,7 @@ length= len(symbol_list)
 # 改为分拔画图,5个一组画
 
 index=0
-data=[]
+#data=[]
 df_all = pd.DataFrame()
 row_num = round(length/5+1)
 fig = make_subplots(rows=row_num, cols=1)
@@ -77,11 +79,9 @@ for elem in symbol_list:
     # trace = go.Scatter(x=df_all.index,y=df_all[symbol],mode="lines+markers",name=symbol)
     index=index+1
     print(round(index/5 +1))
-    fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol), row=(round(index/5)+1), col=1)
+    fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol), row=round(index/5+1), col=1)
     # data.append(trace)
-print(df_all.shape)
-print(type(df_all.shape))
-print(df_all.shape[1])
+fig.update_layout(height=3000, width=1200)
 fig.show()
 # py.iplot(data)
 
