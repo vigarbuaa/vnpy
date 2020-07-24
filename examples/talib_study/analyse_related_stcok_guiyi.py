@@ -61,11 +61,15 @@ industry_str = "银行"
 symbol_list = get_industry_local(industry_str)
 length= len(symbol_list)
 
-# 改为分拔画图,5个一组画
+today=todayDateStr()
+if not os.path.exists(today):
+    os.makedirs(today)
 
+# 改为分拔画图,5个一组画
 index=0
 #data=[]
 df_all = pd.DataFrame()
+df_excel = pd.DataFrame() # 用于导出当日数据
 row_num = round(length/5+1)
 fig = make_subplots(rows=row_num, cols=1)
 
@@ -73,15 +77,24 @@ for elem in symbol_list:
     symbol = elem
     print(symbol)
     df = get_df_from_local(symbol)
+    df['symbol']=symbol
+    df['guiyi']=(df['close']-df['low'].min())/(df['high'].max()-df['low'].min())
+    df_excel=df_excel.append(df.tail(1))
     print(df.head(5))
-    df_all[symbol]=(df['close']-df['low'].min())/(df['high'].max()-df['low'].min())
+    df_all[symbol]=df['guiyi']
     print(df_all.head(5))
     # trace = go.Scatter(x=df_all.index,y=df_all[symbol],mode="lines+markers",name=symbol)
     index=index+1
     print(round(index/5 +1))
     fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol), row=round(index/5+1), col=1)
     # data.append(trace)
+
+print(df_excel)
+df_excel.to_excel(today+"/"+industry_str+"_"+ today+"_analyse.xlsx")
 fig.update_layout(height=3000, width=1200)
 fig.show()
 # py.iplot(data)
 
+
+
+# https://www.pianshen.com/article/5500341648/
