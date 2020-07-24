@@ -55,49 +55,33 @@ def merge_df(df1,df2):
     df1 = (df1-df1.min())/(df1.max()-df1.min())
     return df1
 
-# df_sz_raw = pro.fut_daily(ts_code='JDL.DCE',start_date="20180101",fields='trade_date,close')
-# df_sz = convert_df_date(df_sz_raw)
-
-# df_zero= copy.copy(df_sz)
-# df_zero['close']=0
-
-# symbol_list = ["sh.688086","sz.300821","sz.000001"]
 industry_str = "银行"
 symbol_list = get_industry_local(industry_str)
 length= len(symbol_list)
-# fig,axes = plt.subplots(length,1,figsize=(15,length*8))
 
-# 头里先画主力
-# axes[0].set_title(industry_str,fontproperties='SimHei', fontsize=15)
-# df_sz.plot(ax=axes[0])
+# 改为分拔画图,5个一组画
 
 index=0
 data=[]
 df_all = pd.DataFrame()
+row_num = round(length/5+1)
+fig = make_subplots(rows=row_num, cols=1)
+
 for elem in symbol_list:
     symbol = elem
     print(symbol)
     df = get_df_from_local(symbol)
     print(df.head(5))
-    # df1 = (df1-df1.min())/(df1.max()-df1.min())
     df_all[symbol]=(df['close']-df['low'].min())/(df['high'].max()-df['low'].min())
-    # df1.columns=[symbol]
     print(df_all.head(5))
-    # df = get_fut_info(symbol, df_zero)
-    # axes[index].set_title(symbol,fontproperties='SimHei', fontsize=15)
-    # df_plot = merge_df(df,df_sz)
-    # df.plot(ax=axes[index])
+    # trace = go.Scatter(x=df_all.index,y=df_all[symbol],mode="lines+markers",name=symbol)
     index=index+1
-    trace = go.Scatter(x=df_all.index,y=df_all[symbol],mode="lines+markers",name=symbol)
-    data.append(trace)
+    print(round(index/5 +1))
+    fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol), row=(round(index/5)+1), col=1)
+    # data.append(trace)
+print(df_all.shape)
+print(type(df_all.shape))
+print(df_all.shape[1])
+fig.show()
+# py.iplot(data)
 
-py.iplot(data)
-
-
-
-#df_all.plot()
-#plt.show()
-# pic_name="test411.v1.png"
-# png_output_dir=".\\analyse_png\\"
-# plt.subplots_adjust(hspace=0.5)
-# plt.savefig(png_output_dir+pic_name)
