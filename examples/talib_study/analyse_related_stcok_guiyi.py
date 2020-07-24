@@ -7,6 +7,7 @@ import os, time, json, sys, traceback, logging, getopt
 import matplotlib.pyplot as plt
 from urllib import request
 import plotly.graph_objects as go
+import plotly.offline as py
 from plotly.subplots import make_subplots
 import copy
 
@@ -61,16 +62,17 @@ def merge_df(df1,df2):
 # df_zero['close']=0
 
 # symbol_list = ["sh.688086","sz.300821","sz.000001"]
-symbol_list = get_industry_local("银行")
+industry_str = "银行"
+symbol_list = get_industry_local(industry_str)
 length= len(symbol_list)
 # fig,axes = plt.subplots(length,1,figsize=(15,length*8))
 
 # 头里先画主力
-# axes[0].set_title("对比",fontproperties='SimHei', fontsize=15)
+# axes[0].set_title(industry_str,fontproperties='SimHei', fontsize=15)
 # df_sz.plot(ax=axes[0])
 
 index=0
-
+data=[]
 df_all = pd.DataFrame()
 for elem in symbol_list:
     symbol = elem
@@ -86,8 +88,15 @@ for elem in symbol_list:
     # df_plot = merge_df(df,df_sz)
     # df.plot(ax=axes[index])
     index=index+1
-df_all.plot()
-plt.show()
+    trace = go.Scatter(x=df_all.index,y=df_all[symbol],mode="lines+markers",name=symbol)
+    data.append(trace)
+
+py.iplot(data)
+
+
+
+#df_all.plot()
+#plt.show()
 # pic_name="test411.v1.png"
 # png_output_dir=".\\analyse_png\\"
 # plt.subplots_adjust(hspace=0.5)
