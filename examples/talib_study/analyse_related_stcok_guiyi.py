@@ -23,7 +23,6 @@ def get_industry_local(industry):
     df=pd.read_excel("all_stock_detail.xlsx")
     return df[df["industry"]==industry]["stock_num"].tolist()
 
-# 取得symbol与name的对应map
 def get_symbol_map():
     symbol_map={}
     df=pd.read_excel("all_stock_detail.xlsx")
@@ -75,10 +74,11 @@ industry_str = "汽车整车"
 symbol_list = get_industry_local(industry_str)
 length= len(symbol_list)
 
+symbol_name_map = get_symbol_map()
+
 today=todayDateStr()
 if not os.path.exists(today):
     os.makedirs(today)
-
 # 改为分拔画图,5个一组画
 index=0
 #data=[]
@@ -89,9 +89,11 @@ fig = make_subplots(rows=row_num, cols=1)
 
 for elem in symbol_list:
     symbol = elem
+    name = symbol_name_map[symbol]
     print(symbol)
     df = get_df_from_local(symbol)
     df['symbol']=symbol
+    df['name']=name
     # df['guiyi']=(df['close']-df['low'].min())/(df['high'].max()-df['low'].min())
     min=df['low'].min()
     max=df['high'].max()
@@ -103,7 +105,7 @@ for elem in symbol_list:
     # trace = go.Scatter(x=df_all.index,y=df_all[symbol],mode="lines+markers",name=symbol)
     index=index+1
     print(round(index/5 +1))
-    fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol), row=round(index/5+1), col=1)
+    fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol+"_"+name), row=round(index/5+1), col=1)
     # data.append(trace)
 
 print(df_excel)
