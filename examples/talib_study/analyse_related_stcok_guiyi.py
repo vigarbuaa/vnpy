@@ -57,7 +57,13 @@ def merge_df(df1,df2):
     df1 = (df1-df1.min())/(df1.max()-df1.min())
     return df1
 
-industry_str = "银行"
+# industry_str = "白酒"
+# industry_str = "银行"
+# industry_str = "啤酒"
+# industry_str = "机场"
+# industry_str = "空运"
+# industry_str = "保险"
+industry_str = "汽车整车"
 symbol_list = get_industry_local(industry_str)
 length= len(symbol_list)
 
@@ -78,7 +84,10 @@ for elem in symbol_list:
     print(symbol)
     df = get_df_from_local(symbol)
     df['symbol']=symbol
-    df['guiyi']=(df['close']-df['low'].min())/(df['high'].max()-df['low'].min())
+    # df['guiyi']=(df['close']-df['low'].min())/(df['high'].max()-df['low'].min())
+    min=df['low'].min()
+    max=df['high'].max()
+    df['guiyi']=(df['close']-min)/(max-min)
     df_excel=df_excel.append(df.tail(1))
     print(df.head(5))
     df_all[symbol]=df['guiyi']
@@ -90,7 +99,7 @@ for elem in symbol_list:
     # data.append(trace)
 
 print(df_excel)
-df_excel.to_excel(today+"/"+industry_str+"_"+ today+"_analyse.xlsx")
+df_excel.sort_values("guiyi").to_excel(today+"/"+industry_str+"_"+ today+"_analyse.xlsx")
 fig.update_layout(height=3000, width=1200)
 fig.show()
 # py.iplot(data)
