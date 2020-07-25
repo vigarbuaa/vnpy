@@ -23,6 +23,14 @@ def get_industry_local(industry):
     df=pd.read_excel("all_stock_detail.xlsx")
     return df[df["industry"]==industry]["stock_num"].tolist()
 
+# 取得symbol与name的对应map
+def get_symbol_map():
+    symbol_map={}
+    df=pd.read_excel("all_stock_detail.xlsx")
+    for  row in df.iterrows():
+        symbol_map[row[1]["stock_num"]]=row[1]["name"]
+    return symbol_map
+
 def get_df_from_local(code):
     symbol=code.replace(".","-")
     # target_url="http://localhost:8088/api/stockHis/"+symbol
