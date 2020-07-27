@@ -32,8 +32,7 @@ def get_symbol_map():
 
 def get_df_from_local(code):
     symbol=code.replace(".","-")
-    # target_url="http://localhost:8088/api/stockHis/"+symbol
-    target_url="http://todo:8777/api/stockHis/"+symbol
+    target_url="http://localhost:8777/api/stockHis/"+symbol
     print(target_url)
     head={}
     head['User-Agent'] = 'Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19'
@@ -43,10 +42,8 @@ def get_df_from_local(code):
     json_raw = target_html
     json_body = json.loads(json.loads(json_raw))
     df = pd.DataFrame(json_body)
-    # ret = df.sort_values('date')
     ret = df
     ret['date_str']=pd.to_datetime(ret['date'])
-    # ret=ret.sort_values('date_str')
     ret.set_index("date_str",inplace=True)
     ret = df.drop(columns=['ID',"date"])
     return ret 
@@ -68,42 +65,28 @@ today=todayDateStr()
 if not os.path.exists(today):
     os.makedirs(today)
 
-# industry_list=["白酒","银行","水泥","旅游服务","空运","石油加工","啤酒","保险","证券","食品","化学制药","中成药","半导体"]
-symbol_list = get_industry_local(industry_str)
-length= len(symbol_list)
-
+industry_list=["白酒","银行","水泥","旅游服务","空运","石油加工","啤酒","保险","证券","食品","化学制药","中成药","半导体"]
 symbol_name_map = get_symbol_map()
 
-# 改为分拔画图,5个一组画
-index=0
-#data=[]
-df_all = pd.DataFrame()
-df_excel = pd.DataFrame() # 用于导出当日数据
-row_num = round(length/5+1)
-fig = make_subplots(rows=row_num, cols=1)
-
-for elem in symbol_list:
-    symbol = elem
-    name = symbol_name_map[symbol]
-    print(symbol)
-    df = get_df_from_local(symbol)
-    df['symbol']=symbol
-    df['name']=name
-    min=df['low'].min()
-    max=df['high'].max()
-    df['guiyi']=(df['close']-min)/(max-min)
-    df_excel=df_excel.append(df.tail(1))
-    print(df.head(5))
-    df_all[symbol]=df['guiyi']
-    print(df_all.head(5))
-    index=index+1
-    print(round(index/5 +1))
-    fig.add_trace(go.Line(x=df_all.index, y=df_all[symbol],mode="lines+markers", name=symbol+"_"+name), row=round(index/5+1), col=1)
-
-print(df_excel)
-df_excel.sort_values("guiyi").to_excel(today+"/"+industry_str+"_"+ today+"_analyse.xlsx")
-fig.update_layout(height=500*row_num, width=1200)
-fig.show()
-
-
-# https://www.pianshen.com/article/5500341648/
+for industry_str in industry_list:
+    symbol_list = get_industry_local(industry_str)
+    length= len(symbol_list)
+    
+    df_all = pd.DataFrame()
+    df_excel = pd.DataFrame() # 用于导出当日数据
+    row_num = round(length/5+1)
+    
+    for elem in symbol_list:
+        symbol = elem
+        name = symbol_name_map[symbol]
+        print(symbol)
+        df = get_df_from_local(symbol)
+        df['symbol']=symbol
+        df['name']=name
+        min=df['low'].min()
+        max=df['high'].max()
+        df['guiyi']=(df['close']-min)/(max-min)
+        df_excel=df_excel.append(df.tail(1))
+        df_all[symbol]=df['guiyi']
+    
+    df_excel.sort_values("guiyi").to_excel(today+"/"+industry_str+"_"+ today+"_analyse.xlsx")
