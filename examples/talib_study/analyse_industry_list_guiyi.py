@@ -54,12 +54,26 @@ def convert_df_date(df):
     df_ret = df.drop(columns=['trade_date'])
     return df_ret
 
-df_all = pd.read_excel("all_comp_info.xlsx")
+# df_all = pd.read_excel("all_comp_info.xlsx")
 
 def merge_df(df1,df2):
     df1['dapan']=df2['close']
     df1 = (df1-df1.min())/(df1.max()-df1.min())
     return df1
+
+def macd_filter(df):
+    # 金叉
+    if(df["dif"][-1] > df["dem"][-1] and df["dif"][-2] <= df["dem"][-2] and df["histogram"][-1]>0 ):
+        return True
+    else:
+        return False 
+
+def add_talib_zhibiao(df):
+    dif, dem, histogram = talib.MACD(df.close, fastperiod=12, slowperiod=26, signalperiod=9)
+    df['dif']=dif
+    df['dem']=dem
+    df['histogram']=histogram
+    return df
 
 today=todayDateStr()
 if not os.path.exists(today):
@@ -67,12 +81,13 @@ if not os.path.exists(today):
 
 industry_list=["白酒","银行","水泥","旅游服务","空运","石油加工","啤酒","保险","证券","食品","化学制药","中成药","半导体"]
 symbol_name_map = get_symbol_map()
-
+writer=pd.ExcelWriter(today+"/"+today+"_analyse.xlsx")
+sheet_index=0
 for industry_str in industry_list:
     symbol_list = get_industry_local(industry_str)
     length= len(symbol_list)
     
-    df_all = pd.DataFrame()
+    # df_all = pd.DataFrame()
     df_excel = pd.DataFrame() # 用于导出当日数据
     row_num = round(length/5+1)
     
@@ -86,7 +101,16 @@ for industry_str in industry_list:
         min=df['low'].min()
         max=df['high'].max()
         df['guiyi']=(df['close']-min)/(max-min)
-        df_excel=df_excel.append(df.tail(1))
-        df_all[symbol]=df['guiyi']
+        df2= add_talib_zhibiao(df)
+        df2['gold']="--"
+        if(macd_filter(df2)):
+            df2['gold']="金叉"
+
+        df_excel=df_excel.append(df2.tail(1))
+        # df_all[symbol]=df['guiyi']
     
-    df_excel.sort_values("guiyi").to_excel(today+"/"+industry_str+"_"+ today+"_analyse.xlsx")
+    df_excel.sort_values("guiyi").to_excel(writer,sheet_name=industry_str,index=sheet_index)
+    sheet_index=sheet_index+1
+
+writer.save()
+writer.close()
