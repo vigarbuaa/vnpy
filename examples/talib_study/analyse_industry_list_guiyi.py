@@ -15,19 +15,22 @@ import copy
 def todayDateStr():
     return  time.strftime("%Y-%m-%d",time.localtime())
 
-def get_all_code_local():
-    df=pd.read_excel("all_stock_detail.xlsx")
-    return df['stock_num'].tolist()
+# def get_all_code_local():
+    # df=pd.read_excel("all_stock_detail.xlsx")
+    # return df['stock_num'].tolist()
 
 def get_industry_local(industry):
-    df=pd.read_excel("all_stock_detail.xlsx")
-    return df[df["industry"]==industry]["stock_num"].tolist()
+    # df=pd.read_excel("all_stock_detail.xlsx")
+    df=pd.read_csv("stock_info.csv")
+    return df[df["industry"]==industry]["code"].tolist()
 
 def get_symbol_map():
     symbol_map={}
-    df=pd.read_excel("all_stock_detail.xlsx")
+    # df=pd.read_excel("all_stock_detail.xlsx")
+    # df=pd.read_excel("all_stock_detail.xlsx")
+    df=pd.read_csv("stock_info.csv")
     for  row in df.iterrows():
-        symbol_map[row[1]["stock_num"]]=row[1]["name"]
+        symbol_map[row[1]["code"]]=row[1]["code_name"]
     return symbol_map
 
 def get_df_from_local(code):
@@ -42,6 +45,8 @@ def get_df_from_local(code):
     json_raw = target_html
     json_body = json.loads(json.loads(json_raw))
     df = pd.DataFrame(json_body)
+    if(len(df)==0):
+        return df
     ret = df
     ret['date_str']=pd.to_datetime(ret['date'])
     ret.set_index("date_str",inplace=True)
@@ -68,6 +73,16 @@ def macd_filter(df):
     else:
         return False 
 
+# 计算下金叉后持续的强势股
+def macd_filter_2(df):
+    pass
+
+# 计算下rsi<20 & 金叉
+def macd_filter_2(df):
+    pass
+
+# add ROE
+
 def add_talib_zhibiao(df):
     dif, dem, histogram = talib.MACD(df.close, fastperiod=12, slowperiod=26, signalperiod=9)
     df['dif']=dif
@@ -79,7 +94,10 @@ today=todayDateStr()
 if not os.path.exists(today):
     os.makedirs(today)
 
-industry_list=["白酒","银行","水泥","旅游服务","空运","石油加工","啤酒","保险","证券","食品","化学制药","中成药","半导体"]
+df_all_stock=pd.read_csv("stock_info.csv")
+# industry_list=["白酒","银行","水泥","旅游服务","空运","石油加工","啤酒","保险","证券","食品","化学制药","中成药","半导体"]
+industry_list = df_all_stock["industry"].unique().tolist()
+
 symbol_name_map = get_symbol_map()
 writer=pd.ExcelWriter(today+"/"+today+"_analyse.xlsx")
 sheet_index=0
@@ -94,8 +112,10 @@ for industry_str in industry_list:
     for elem in symbol_list:
         symbol = elem
         name = symbol_name_map[symbol]
-        print(symbol)
+        print(industry_str+"_"+symbol)
         df = get_df_from_local(symbol)
+        if(len(df)==0):
+            continue
         df['symbol']=symbol
         df['name']=name
         min=df['low'].min()
@@ -105,12 +125,17 @@ for industry_str in industry_list:
         df2['gold']="--"
         if(macd_filter(df2)):
             df2['gold']="金叉"
-
+        print(df2.tail(5))
+        print("++++++"+ elem + "---"+ industry_str+"+++")
+        print(df2.tail(1))
         df_excel=df_excel.append(df2.tail(1))
         # df_all[symbol]=df['guiyi']
     
-    df_excel.sort_values("guiyi").to_excel(writer,sheet_name=industry_str,index=sheet_index)
-    sheet_index=sheet_index+1
+    print("---------===========-----------")
+    print(df_excel.tail(5))
+    if (len(df_excel)>0):
+        df_excel.sort_values("guiyi").to_excel(writer,sheet_name=industry_str,index=sheet_index)
+        sheet_index=sheet_index+1
 
 writer.save()
 writer.close()
