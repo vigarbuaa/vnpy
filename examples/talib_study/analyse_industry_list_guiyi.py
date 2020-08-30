@@ -67,8 +67,8 @@ def merge_df(df1,df2):
     return df1
 
 def macd_filter(df):
-    # 金叉
-    if(df["dif"][-1] > df["dem"][-1] and df["dif"][-2] <= df["dem"][-2] and df["histogram"][-1]>0 ):
+    # 金叉, 增加条件，要求dif/dem都在中线以上
+    if(df["dif"][-1] > df["dem"][-1] and df["dif"][-2] <= df["dem"][-2] and df["histogram"][-1]>0 and df["dif"][-1] >0 and df["dem"][-1]>0 ):
         return True
     else:
         return False 
