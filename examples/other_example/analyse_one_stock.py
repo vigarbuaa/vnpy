@@ -1,23 +1,42 @@
 import numpy as np
 import talib
-import pandas as pd
-import baostock as bs
 import os, time, json, sys, traceback, logging, getopt
-import matplotlib.pyplot as plt
-from pylab import mpl
+import baostock as bs
+import pandas as pd
 
-mpl.rcParams['font.sans-serif']=['KaiTi']
-mpl.rcParams['axes.unicode_minus']=False
 
-df = pd.read_excel("C:/Users/vigar/Documents/GitHub/vnpy_vigar/examples/other_example/600859_stock_k_data.xlsx",sheet_name="600859_stock_k_data",header=0,index_col=0)
-df2=df['turn']
-df2.plot(kind="line",figsize=(15,9),title="浦发换手率",grid=True,fontsize=13)
-
-df3=df['amount']/100000000
-df3.plot(kind="hist",figsize=(15,9),title="浦发交易额",grid=True,fontsize=13)
-
-df3.plot(kind="box",figsize=(15,9),title="浦发交易额",grid=True,fontsize=13)
-
-df4=df[['open','high','low','close']]
-
-df4.plot(kind="line",subplots=True,sharex=True,sharey=True,layout=(2,2),figsize=(10,8),title="走势图",grid=True,fontsize=13)
+def get_stock_df(stock_num):
+  # rs = bs.query_history_k_data_plus(stock,"date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,isST",
+  rs = bs.query_history_k_data_plus(stock,"date,code,open,high,low,close,volume,amount",
+      start_date='2019-01-01', end_date='2020-10-31',
+      frequency="d", adjustflag="3")
+  print('query_history_k_data_plus respond error_code:'+rs.error_code)
+  print('query_history_k_data_plus respond  error_msg:'+rs.error_msg)
+  
+  #### 打印结果集 ####
+  data_list = []
+  while (rs.error_code == '0') & rs.next():
+      # 获取一条记录，将记录合并在一起
+      data_list.append(rs.get_row_data())
+  result = pd.DataFrame(data_list, columns=rs.fields)
+  result.to_csv(stock+"_k_data.csv", index=False)
+  df = pd.read_csv(stock+"_k_data.csv",header=0,index_col=0)
+  print(df.tail(3))
+  
+  macd, signal, hist = talib.MACD(df.close,fastperiod=12,slowperiod=26,signalperiod=9)
+  df['macd']=macd
+  df['signal']=signal
+  df['hist']=hist
+  print(df.tail(3))
+  
+  #### 结果集输出到csv文件 ####   
+  # print(result)
+  
+stock="sh.600585"
+#### 登陆系统 ####
+lg = bs.login()
+print('login respond error_code:'+lg.error_code)
+print('login respond  error_msg:'+lg.error_msg)
+# 显示登陆返回信息
+get_stock_df(stock)
+bs.logout()
