@@ -4,10 +4,14 @@ import os, time, json, sys, traceback, logging, getopt
 import baostock as bs
 import pandas as pd
 
+def todayDateStr():
+    return  time.strftime("%Y-%m-%d",time.localtime())
+
 def get_stock_df(stock_num):
   # rs = bs.query_history_k_data_plus(stock,"date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,tradestatus,pctChg,isST",
+  today_str = todayDateStr()
   rs = bs.query_history_k_data_plus(stock,"date,code,open,high,low,close,volume,amount",
-      start_date='2019-01-01', end_date='2020-10-31',
+      start_date='2019-01-01', end_date=todayDateStr,
       frequency="d", adjustflag="3")
   print('query_history_k_data_plus respond error_code:'+rs.error_code)
   print('query_history_k_data_plus respond  error_msg:'+rs.error_msg)
